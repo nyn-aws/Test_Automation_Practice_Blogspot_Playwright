@@ -125,7 +125,9 @@ test.describe("Playwright Locators", () => {
     // assertions
     await expect(email_address_input).toBeVisible();
     await expect(email_address_input).toBeEnabled();
+    // two ways to validate an attribute
     await expect(email_address_input).toHaveAttribute("type", "email");
+    expect(await email_address_input.getAttribute("type")).toBe("email");
     await expect(email_address_input).toHaveValue("");
 
     await expect(password_input).toBeVisible();
@@ -159,6 +161,8 @@ test.describe("Playwright Locators", () => {
 
     // assertions
     await expect(email_address_input).toHaveValue("email@email.com");
+    // another way to validate the input value
+    expect(await email_address_input.inputValue()).toBe("email@email.com");
     await expect(password_input).toHaveValue("password");
     await expect(age_input).toHaveValue("70");
     await expect(shipping_express).toBeChecked();
