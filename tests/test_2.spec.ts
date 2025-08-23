@@ -273,6 +273,108 @@ test.describe("Playwright Actions and  Assertions", () => {
   });
 });
 
+test.describe("Date Picker", () => {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  test.beforeEach(async ({ page }) => {
+    await page.goto("");
+    await page.waitForLoadState("networkidle");
+  });
+  test("Date Picker: Type 1", async ({ page }) => {
+    // Simple use fill methods
+    // provide string of the date
+    const jQuery_datepicker = page.locator("#datepicker");
+    await expect(jQuery_datepicker).toHaveValue("");
+    const date_value = "12/12/2122";
+    await jQuery_datepicker.fill(date_value);
+    await expect(jQuery_datepicker).toHaveValue(date_value);
+  });
+
+  test("Date Picker: Type 1 : Method 2", async ({ page }) => {
+    // Using datepicker on the same page (no redirection)
+    const jQuery_datepicker = page.locator("#datepicker");
+    await expect(jQuery_datepicker).toHaveValue("");
+
+    // Target date
+    const targetYear = 2027;
+    const targetMonth = "December";
+    const targetDay = "12";
+
+    // Open datepicker
+    await jQuery_datepicker.click();
+
+    const ui_datepicker_widget = page.locator(
+      "//div[contains(@class, 'ui-datepicker ui-widget')]"
+    );
+    const ui_month = ui_datepicker_widget.locator(".ui-datepicker-month");
+    const ui_year = ui_datepicker_widget.locator(".ui-datepicker-year");
+    const next_button = ui_datepicker_widget.locator("//a[@title='Next']");
+    const prev_button = ui_datepicker_widget.locator("//a[@title='Prev']");
+
+    // Adjust year
+    while (parseInt(await ui_year.innerText()) !== targetYear) {
+      if (parseInt(await ui_year.innerText()) < targetYear) {
+        await next_button.click();
+      } else {
+        await prev_button.click();
+      }
+    }
+
+    while ((await ui_month.innerText()) !== targetMonth) {
+      const currentMonth = await ui_month.innerText();
+      if (months.indexOf(currentMonth) < months.indexOf(targetMonth)) {
+        await next_button.click();
+      } else {
+        await prev_button.click();
+      }
+    }
+
+    // Select the target day
+    const ui_day = ui_datepicker_widget.locator(`//a[text()="${targetDay}"]`);
+    await ui_day.click();
+
+    await expect(jQuery_datepicker).toHaveValue(
+      `${months.indexOf(targetMonth) + 1}/${targetDay}/${targetYear}`
+    );
+  });
+
+  test("DatePicker: Type 2", async ({ page }) => {
+    const date_picker_2 = page.locator("#txtDate");
+    const jQuery_datepicker_2 = page.locator("#ui-datepicker-div");
+    const select_month = page.getByLabel("Select month");
+    const select_year = page.getByLabel("Select year");
+
+    // Target Date
+    const month = "December";
+    const year = 2080;
+    const day = 12;
+    await date_picker_2.click();
+    await select_month.selectOption({ value: `${months.indexOf(month)}` });
+    await select_year.selectOption("2035");
+    await select_year.selectOption("2045");
+    await select_year.selectOption("2055");
+    await select_year.selectOption("2045");
+    await jQuery_datepicker_2.locator(`//*[@data-date='${day}']`).click();
+
+    // assertions
+    await expect(date_picker_2).toHaveValue(
+      `${months.indexOf(month) + 1}/${day}/${year}`
+    );
+  });
+});
+
 test.describe("Pagination Web Table : https://datatables.net/", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("https://datatables.net/");
