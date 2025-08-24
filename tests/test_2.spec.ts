@@ -1,4 +1,4 @@
-import { test, expect, Locator } from "@playwright/test";
+import { test, expect, Locator, chromium } from "@playwright/test";
 
 test.describe("Playwright Actions and  Assertions", () => {
   test.beforeEach(async ({ page }) => {
@@ -270,6 +270,14 @@ test.describe("Playwright Actions and  Assertions", () => {
         console.log(await row.innerText());
       }
     }
+  });
+
+  test("Handling Mouse Actions", async ({ page }) => {
+    // Handling Hover actions
+    const point_me_button = page.getByRole("button", { name: "Point Me" });
+    await point_me_button.hover();
+    await page.locator(".dropdown-content  a").first().hover();
+    await page.waitForTimeout(5000);
   });
 });
 
@@ -573,5 +581,185 @@ test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", ()
       "Thank you for your purchase today!"
     );
     await expect(purchase_confirmation).toBeVisible();
+  });
+});
+
+test.describe("Different Alerts", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("");
+    await page.waitForLoadState("networkidle");
+  });
+  test("Simple Alert", async ({ page }) => {
+    const simple_alert = page.getByRole("button", { name: "Simple Alert" });
+    page.on("dialog", async (dialog) => {
+      console.log("Dialog Type:", dialog.type());
+      console.log("Dialog message:", dialog.message());
+      await dialog.accept();
+    });
+    await simple_alert.click();
+  });
+
+  test("Confirmation Alert", async ({ page }) => {
+    const confirm_dialog = page.getByRole("button", {
+      name: "Confirmation Alert",
+    });
+    page.on("dialog", async (dialog) => {
+      console.log("Dialog Type:", dialog.type());
+      console.log("Dialog message:", dialog.message());
+      await dialog.accept();
+    });
+    await confirm_dialog.click();
+
+    const confirmation_message = page.getByText("You pressed OK!");
+    await expect(confirmation_message).toBeVisible();
+  });
+
+  test("Prompt Alert", async ({ page }) => {
+    const prompt_dialog = page.getByRole("button", { name: "Prompt Alert" });
+    const username = "Test User";
+    page.on("dialog", async (dialog) => {
+      console.log("Dialog Type:", dialog.type());
+      console.log("Dialog message:", dialog.message());
+      console.log("Dialog default value:", dialog.defaultValue());
+
+      await dialog.accept(username);
+    });
+    await prompt_dialog.click();
+    expect(
+      await page.getByText(`Hello ${username}! How are you today?`)
+    ).toBeTruthy();
+  });
+});
+
+test.describe("Frames", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("https://ui.vision/demo/webtest/frames/");
+  });
+
+  test("Validating Number of Frames", async ({ page }) => {
+    const all_frames = page.frames();
+    console.log("Number of frames:", all_frames.length);
+
+    // Approach 1
+    const frame1 = page.frame({
+      url: "https://ui.vision/demo/webtest/frames/frame_1.html",
+    });
+    if (frame1) {
+      console.log("Frame 1 is available");
+      const frame1_text = frame1.getByRole("textbox");
+      await frame1_text.fill("Testing frame 1");
+      await expect(frame1_text).toHaveValue("Testing frame 1");
+    } else {
+      console.log("Frame 1 is not available");
+    }
+
+    // Approach using FrameLocator
+    const frame2 = page.frameLocator('[src="frame_2.html"]');
+    await frame2.getByRole("textbox").fill("Testing frame 2");
+    await expect(frame2.getByRole("textbox")).toHaveValue("Testing frame 2");
+
+    const frame4 = page.frameLocator('[src="frame_4.html"]');
+    await frame4.getByRole("textbox").fill("Testing frame 4");
+    await expect(frame4.getByRole("textbox")).toHaveValue("Testing frame 4");
+
+    // Nested Frames
+
+    const parentFrame = page.frame({
+      url: "https://ui.vision/demo/webtest/frames/frame_3.html",
+    });
+    if (parentFrame) {
+      await parentFrame.getByRole("textbox").fill("Testing frame 3");
+      await expect(parentFrame.getByRole("textbox")).toHaveValue(
+        "Testing frame 3"
+      );
+      const childFrames = parentFrame.childFrames();
+      console.log("Number of child frames:", childFrames.length);
+      // assertion
+      await expect(childFrames.length).toBeGreaterThan(0);
+      for (const childFrame of childFrames) {
+        console.log("Child frame URL:", childFrame.url());
+      }
+    } else {
+      console.log("Parent frame is not available");
+    }
+  });
+});
+
+test.describe("Handling Tabs and Popup Windows", () => {
+  test("Handling Tabs", async ({ browser }) => {
+    const context = await browser.newContext();
+    const page1 = await context.newPage();
+    await page1.goto("");
+    const new_tab_button = page1.getByRole("button", { name: "New Tab" });
+
+    // We require both of this to happen parallely
+    const [page2] = await Promise.all([
+      context.waitForEvent("page"),
+      new_tab_button.click(),
+    ]);
+    await console.log(page2.url());
+
+    // Use this approach when we have more than two pages
+    const pages = context.pages();
+    console.log(await pages[0].title());
+    console.log(await pages[1].title());
+  });
+
+  test("Handling Popup", async ({ context }) => {
+    const page1 = await context.newPage();
+
+    await page1.goto("");
+    const popup_button = page1.getByRole("button", { name: "Popup Windows" });
+
+    const popups = await Promise.all([
+      page1.waitForEvent("popup"),
+      popup_button.click(),
+    ]);
+
+    const allPopupWindows = context.pages();
+    console.log(allPopupWindows.length);
+
+    console.log("All popup windows:");
+    allPopupWindows.forEach(async (popup) => {
+      console.log(`- ${await popup.title()}`);
+      console.log(`- ${await popup.url()}`);
+    });
+  });
+});
+
+test.describe("Infinite Scroll", () => {
+  test("Infinite Scroll", async ({ page }) => {
+    test.slow();
+    await page.goto("https://www.booksbykilo.in/books?weightrange=201to500gm");
+    await page.waitForLoadState("networkidle");
+
+    while (true) {
+      let current_height = await page.evaluate(() => {
+        return document.body.scrollHeight;
+      });
+
+      // Incorrect way:: Inside page.evaluate, the function runs in the browser context, not in Node/Playwright’s context.
+      // That means variables like current_height don’t exist there unless you pass them in explicitly.
+      // await page.evaluate(() => {
+      //   window.scrollTo(0, current_height);
+      // });
+
+      // correct way
+      await page.evaluate((height_value) => {
+        window.scrollTo(0, height_value);
+      }, current_height);
+      await page.waitForTimeout(2000);
+      await page.waitForLoadState("networkidle");
+
+      let new_height = await page.evaluate(() => {
+        return document.body.scrollHeight;
+      });
+
+      if (new_height === current_height) {
+        break;
+      }
+    }
+
+    console.log("Infinite scroll completed");
   });
 });
