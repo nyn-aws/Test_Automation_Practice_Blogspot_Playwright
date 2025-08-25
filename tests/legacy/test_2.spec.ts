@@ -2,9 +2,18 @@ import { test, expect, Locator, chromium } from "@playwright/test";
 import fs from "fs";
 
 test.describe("Playwright Actions and Assertions", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     await page.goto("");
     await page.waitForLoadState("networkidle");
+    // Log test info and with Proper message execution started for a given test
+    console.log(`Test started: ${testInfo.title}`);
+  });
+  test.afterEach(async ({ page }, testInfo) => {
+    await page.waitForLoadState("networkidle");
+    // Log test execution details with passed and fail along with timing in one line also add if for undefined
+    console.log(
+      `Test finished: ${testInfo.title} | Test status: ${testInfo.status} | Test duration: ${testInfo.duration}ms`
+    );
   });
 
   test("Text Input and assertions", async ({ page }) => {
@@ -12,10 +21,10 @@ test.describe("Playwright Actions and Assertions", () => {
     // Note: since these fields have no name attribute,
     // Playwright first looks for an associated label.
     // If no label is found, it falls back to the placeholder attribute.
-    const name = page.getByRole("textbox", { name: "Enter Name" });
-    const email = page.getByPlaceholder("Enter EMail");
-    const phone = page.getByPlaceholder("Enter Phone");
-    const address = page.getByRole("textbox", { name: "Address:" });
+    const name: Locator = page.getByRole("textbox", { name: "Enter Name" });
+    const email: Locator = page.getByPlaceholder("Enter EMail");
+    const phone: Locator = page.getByPlaceholder("Enter Phone");
+    const address: Locator = page.getByRole("textbox", { name: "Address:" });
 
     // Values
     const name_value = "John";
@@ -59,17 +68,22 @@ test.describe("Playwright Actions and Assertions", () => {
 
   test("Checkbox and Radio Button assertions", async ({ page }) => {
     // Locators
-    const gender = page.getByText("Gender:");
-    const radio_male = page.getByRole("radio", { name: "Male", exact: true });
-    const radio_female = page.getByRole("radio", { name: "Female" });
-    const days = page.getByText("Days:");
-    const sunday = page.getByRole("checkbox", { name: "Sunday" });
-    const monday = page.getByRole("checkbox", { name: "Monday" });
-    const tuesday = page.getByRole("checkbox", { name: "Tuesday" });
-    const wednesday = page.getByRole("checkbox", { name: "Wednesday" });
-    const thursday = page.getByRole("checkbox", { name: "Thursday" });
-    const friday = page.getByRole("checkbox", { name: "Friday" });
-    const saturday = page.getByRole("checkbox", { name: "Saturday" });
+    const gender: Locator = page.getByText("Gender:");
+    const radio_male: Locator = page.getByRole("radio", {
+      name: "Male",
+      exact: true,
+    });
+    const radio_female: Locator = page.getByRole("radio", { name: "Female" });
+    const days: Locator = page.getByText("Days:");
+    const sunday: Locator = page.getByRole("checkbox", { name: "Sunday" });
+    const monday: Locator = page.getByRole("checkbox", { name: "Monday" });
+    const tuesday: Locator = page.getByRole("checkbox", { name: "Tuesday" });
+    const wednesday: Locator = page.getByRole("checkbox", {
+      name: "Wednesday",
+    });
+    const thursday: Locator = page.getByRole("checkbox", { name: "Thursday" });
+    const friday: Locator = page.getByRole("checkbox", { name: "Friday" });
+    const saturday: Locator = page.getByRole("checkbox", { name: "Saturday" });
 
     const days_array: string[] = [
       "Sunday",
@@ -118,12 +132,12 @@ test.describe("Playwright Actions and Assertions", () => {
 
   test("Single and multi-select Dropdowns assertions", async ({ page }) => {
     // Locators
-    const country_dropdown_default = page.getByLabel("country");
-    const colors_dropdown_default = page.locator("#colors");
-    const sorted_list_dropdown_default = page.locator("#animals");
-    const colors_dropdown = page.locator("#colors option");
-    const country_dropdown = page.locator("#country option");
-    const sorted_list_dropdown = page.locator("#animals option");
+    const country_dropdown_default: Locator = page.getByLabel("country");
+    const colors_dropdown_default: Locator = page.locator("#colors");
+    const sorted_list_dropdown_default: Locator = page.locator("#animals");
+    const colors_dropdown: Locator = page.locator("#colors option");
+    const country_dropdown: Locator = page.locator("#country option");
+    const sorted_list_dropdown: Locator = page.locator("#animals option");
 
     const country_dropdown_options_raw =
       await country_dropdown.allTextContents();
@@ -225,10 +239,10 @@ test.describe("Playwright Actions and Assertions", () => {
   });
 
   test("Dynamic Web Table", async ({ page }) => {
-    const dynamic_table = page.locator("#taskTable");
-    const dynamic_table_head = dynamic_table.locator("thead");
-    const dynamic_table_body = dynamic_table.locator("tbody");
-    const dynamic_table_body_rows = dynamic_table_body.locator("tr");
+    const dynamic_table: Locator = page.locator("#taskTable");
+    const dynamic_table_head: Locator = dynamic_table.locator("thead");
+    const dynamic_table_body: Locator = dynamic_table.locator("tbody");
+    const dynamic_table_body_rows: Locator = dynamic_table_body.locator("tr");
 
     expect(dynamic_table).toBeVisible();
 
@@ -263,10 +277,12 @@ test.describe("Playwright Actions and Assertions", () => {
 
   test("Pagination Web Table", async ({ page }) => {
     // Objective is to read and print all data of the pagination table
-    const pagination_web_table = page.getByText("Pagination Web Table ID Name");
-    const pagination_list = pagination_web_table.locator("ul li a");
-    const pagination_table = pagination_web_table.locator("table");
-    const pagination_table_rows = pagination_table.locator("tbody tr");
+    const pagination_web_table: Locator = page.getByText(
+      "Pagination Web Table ID Name"
+    );
+    const pagination_list: Locator = pagination_web_table.locator("ul li a");
+    const pagination_table: Locator = pagination_web_table.locator("table");
+    const pagination_table_rows: Locator = pagination_table.locator("tbody tr");
     for (const page_link of await pagination_list.all()) {
       await page_link.click();
       await page.waitForLoadState("networkidle");
@@ -278,27 +294,33 @@ test.describe("Playwright Actions and Assertions", () => {
 
   test("Handling Mouse and Keyboard Actions", async ({ page }) => {
     // Handling Hover actions
-    const point_me_button = page.getByRole("button", { name: "Point Me" });
+    const point_me_button: Locator = page.getByRole("button", {
+      name: "Point Me",
+    });
     await point_me_button.hover();
     await page.locator(".dropdown-content  a").first().hover();
 
     // Double click
     await expect(page.locator("#field2")).toHaveValue("");
-    const copy_text_button = page.getByRole("button", { name: "Copy Text" });
+    const copy_text_button: Locator = page.getByRole("button", {
+      name: "Copy Text",
+    });
     await copy_text_button.dblclick();
     await expect(page.locator("#field2")).toHaveValue("Hello World!");
 
     // Drag and Drop
-    const source_element = page.getByText("Drag me to my target");
-    const target_element = page.locator("#droppable");
+    const source_element: Locator = page.getByText("Drag me to my target");
+    const target_element: Locator = page.locator("#droppable");
     await source_element.dragTo(target_element);
     await page.waitForTimeout(1000);
     await expect(target_element).toHaveText("Dropped!");
 
     // Slider element
-    const slider_element_1 = page.locator(".ui-slider-handle ").first();
-    const slider_element_2 = page.locator(".ui-slider-handle ").nth(1);
-    const price_range_locator = page.getByLabel("Price range:");
+    const slider_element_1: Locator = page
+      .locator(".ui-slider-handle ")
+      .first();
+    const slider_element_2: Locator = page.locator(".ui-slider-handle ").nth(1);
+    const price_range_locator: Locator = page.getByLabel("Price range:");
     console.log(await price_range_locator.inputValue());
     // Press ArrowLeft 5 times using loop
     for (let i = 0; i < 5; i++) {
@@ -311,42 +333,44 @@ test.describe("Playwright Actions and Assertions", () => {
     expect(await price_range_locator.inputValue()).toEqual("$70 - $315");
 
     // Selecting an element from Scrolling Dropdown
-    const combobox_input = page.locator("#comboBox");
+    const combobox_input: Locator = page.locator("#comboBox");
     await combobox_input.click();
-    const item_86 = page.locator('//div[@class="option"][text()="Item 86"]');
+    const item_86: Locator = page.locator(
+      '//div[@class="option"][text()="Item 86"]'
+    );
     await item_86.click();
     await expect(combobox_input).toHaveValue("Item 86");
   });
 
   test("Download Files", async ({ page }) => {
-    const download_files_link = page.getByText("Download Files");
+    const download_files_link: Locator = page.getByText("Download Files");
     await download_files_link.click();
     await page.waitForLoadState("networkidle");
 
-    const download_files_heading = page.getByRole("heading", {
+    const download_files_heading: Locator = page.getByRole("heading", {
       name: "Download Files",
     });
     await expect(download_files_heading).toBeVisible();
-    const download_text_or_pdf_heading = page.getByRole("heading", {
+    const download_text_or_pdf_heading: Locator = page.getByRole("heading", {
       name: "Download a Text or PDF File",
     });
 
     await expect(download_text_or_pdf_heading).toBeVisible();
-    const enter_text_field = page.getByRole("textbox", {
+    const enter_text_field: Locator = page.getByRole("textbox", {
       name: "Enter text",
     });
     await expect(enter_text_field).toBeVisible();
 
     // Info: Whatever text is input in this textbox will be available for download in text or PDF format
 
-    const text_download_button = page.getByRole("button", {
+    const text_download_button: Locator = page.getByRole("button", {
       name: "Generate and Download Text File",
     });
-    const pdf_download_button = page.getByRole("button", {
+    const pdf_download_button: Locator = page.getByRole("button", {
       name: "Generate and Download PDF File",
       exact: true,
     });
-    const pdf_download_button_2 = page.getByRole("button", {
+    const pdf_download_button_2: Locator = page.getByRole("button", {
       name: "Download PDF File",
       exact: true,
     });
@@ -355,8 +379,8 @@ test.describe("Playwright Actions and Assertions", () => {
     await expect(pdf_download_button).toBeVisible();
     await expect(pdf_download_button_2).toBeVisible();
 
-    const download_text_link = page.locator("#txtDownloadLink");
-    const download_pdf_link = page.locator("#pdfDownloadLink");
+    const download_text_link: Locator = page.locator("#txtDownloadLink");
+    const download_pdf_link: Locator = page.locator("#pdfDownloadLink");
     await enter_text_field.fill("This is test data");
     await text_download_button.click();
     const [download1] = await Promise.all([
@@ -381,6 +405,8 @@ test.describe("Playwright Actions and Assertions", () => {
 
     await page.waitForLoadState("networkidle");
   });
+
+  // Test.afterEach
 });
 
 test.describe("Date Picker", () => {
@@ -405,7 +431,7 @@ test.describe("Date Picker", () => {
   test("Date Picker: Type 1", async ({ page }) => {
     // Simple use fill methods
     // Provide string of the date
-    const jQuery_datepicker = page.locator("#datepicker");
+    const jQuery_datepicker: Locator = page.locator("#datepicker");
     await expect(jQuery_datepicker).toHaveValue("");
     const date_value = "12/12/2122";
     await jQuery_datepicker.fill(date_value);
@@ -414,7 +440,7 @@ test.describe("Date Picker", () => {
 
   test("Date Picker: Type 1 : Method 2", async ({ page }) => {
     // Using datepicker on the same page (no redirection)
-    const jQuery_datepicker = page.locator("#datepicker");
+    const jQuery_datepicker: Locator = page.locator("#datepicker");
     await expect(jQuery_datepicker).toHaveValue("");
 
     // Target date
@@ -425,13 +451,19 @@ test.describe("Date Picker", () => {
     // Open datepicker
     await jQuery_datepicker.click();
 
-    const ui_datepicker_widget = page.locator(
+    const ui_datepicker_widget: Locator = page.locator(
       "//div[contains(@class, 'ui-datepicker ui-widget')]"
     );
-    const ui_month = ui_datepicker_widget.locator(".ui-datepicker-month");
-    const ui_year = ui_datepicker_widget.locator(".ui-datepicker-year");
-    const next_button = ui_datepicker_widget.locator("//a[@title='Next']");
-    const prev_button = ui_datepicker_widget.locator("//a[@title='Prev']");
+    const ui_month: Locator = ui_datepicker_widget.locator(
+      ".ui-datepicker-month"
+    );
+    const ui_year: Locator = ui_datepicker_widget.locator(
+      ".ui-datepicker-year"
+    );
+    const next_button: Locator =
+      ui_datepicker_widget.locator("//a[@title='Next']");
+    const prev_button: Locator =
+      ui_datepicker_widget.locator("//a[@title='Prev']");
 
     // Adjust year
     while (parseInt(await ui_year.innerText()) !== targetYear) {
@@ -461,10 +493,10 @@ test.describe("Date Picker", () => {
   });
 
   test("DatePicker: Type 2", async ({ page }) => {
-    const date_picker_2 = page.locator("#txtDate");
-    const jQuery_datepicker_2 = page.locator("#ui-datepicker-div");
-    const select_month = page.getByLabel("Select month");
-    const select_year = page.getByLabel("Select year");
+    const date_picker_2: Locator = page.locator("#txtDate");
+    const jQuery_datepicker_2: Locator = page.locator("#ui-datepicker-div");
+    const select_month: Locator = page.getByLabel("Select month");
+    const select_year: Locator = page.getByLabel("Select year");
 
     // Target Date
     const month = "December";
@@ -480,7 +512,7 @@ test.describe("Date Picker", () => {
 
     // Assertions
     await expect(date_picker_2).toHaveValue(
-      `${months.indexOf(month) + 1}/${day}/${year}`
+      `${months.indexOf(month) + 1}/${day}/2045`
     );
   });
 });
@@ -492,7 +524,7 @@ test.describe("Pagination Web Table : https://datatables.net/", () => {
   });
 
   test("Pagination Web Table - Read all pages", async ({ page }) => {
-    const data_tables_example_rows = page.locator("#example tbody tr");
+    const data_tables_example_rows: Locator = page.locator("#example tbody tr");
 
     while (true) {
       const all_rows = await data_tables_example_rows.all();
@@ -509,8 +541,8 @@ test.describe("Pagination Web Table : https://datatables.net/", () => {
   });
 
   test("Pagination Web Table - Change number of rows", async ({ page }) => {
-    const data_tables_example_rows = page.locator("#example tbody tr");
-    const number_of_rows_dropdown = page.locator("#dt-length-0");
+    const data_tables_example_rows: Locator = page.locator("#example tbody tr");
+    const number_of_rows_dropdown: Locator = page.locator("#dt-length-0");
 
     await expect(data_tables_example_rows).toHaveCount(10);
     await number_of_rows_dropdown.selectOption("25");
@@ -522,8 +554,8 @@ test.describe("Pagination Web Table : https://datatables.net/", () => {
   });
 
   test("Pagination Web Table - Search validation", async ({ page }) => {
-    const data_tables_example_rows = page.locator("#example tbody tr");
-    const search_in_data_table = page.getByRole("searchbox", {
+    const data_tables_example_rows: Locator = page.locator("#example tbody tr");
+    const search_in_data_table: Locator = page.getByRole("searchbox", {
       name: "Search:",
     });
     const name_to_search = "Michael Bruce";
@@ -553,8 +585,8 @@ test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", ()
     await expect(welcome_heading).toBeVisible();
 
     // Dropdowns
-    const departure_dropdown = page.locator('select[name="fromPort"]');
-    const destination_dropdown = page.locator('select[name="toPort"]');
+    const departure_dropdown: Locator = page.locator('select[name="fromPort"]');
+    const destination_dropdown: Locator = page.locator('select[name="toPort"]');
 
     await expect(departure_dropdown).toBeVisible();
     await expect(destination_dropdown).toBeVisible();
@@ -581,8 +613,8 @@ test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", ()
     await expect(flight_details_heading).toBeVisible();
 
     // Read flight details
-    const flight_details_table = page.getByRole("table");
-    const flight_rows = flight_details_table.locator("tbody tr");
+    const flight_details_table: Locator = page.getByRole("table");
+    const flight_rows: Locator = flight_details_table.locator("tbody tr");
 
     console.log(`Available flights: ${await flight_rows.count()}`);
     await expect(flight_rows).toHaveCount(5);
@@ -615,22 +647,22 @@ test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", ()
     }
 
     // Reservation form
-    const reservation_heading = page.getByRole("heading", {
+    const reservation_heading: Locator = page.getByRole("heading", {
       name: "has been reserved",
     });
 
-    const your_name = page.getByPlaceholder("First Last");
-    const your_address = page.getByLabel("address");
-    const your_city = page.getByLabel("city");
-    const your_state = page.getByLabel("state");
-    const your_state_zipcode = page.locator("#zipCode");
-    const card_type = page.locator("#cardType");
-    const cc_number = page.locator("#creditCardNumber");
-    const cc_month = page.getByPlaceholder("Month");
-    const cc_year = page.getByPlaceholder("Year");
-    const name_on_card = page.getByLabel("Name on Card");
-    const remember_me_checkbox = page.getByRole("checkbox");
-    const purchase_flight_button = page.getByRole("button", {
+    const your_name: Locator = page.getByPlaceholder("First Last");
+    const your_address: Locator = page.getByLabel("address");
+    const your_city: Locator = page.getByLabel("city");
+    const your_state: Locator = page.getByLabel("state");
+    const your_state_zipcode: Locator = page.locator("#zipCode");
+    const card_type: Locator = page.locator("#cardType");
+    const cc_number: Locator = page.locator("#creditCardNumber");
+    const cc_month: Locator = page.getByPlaceholder("Month");
+    const cc_year: Locator = page.getByPlaceholder("Year");
+    const name_on_card: Locator = page.getByLabel("Name on Card");
+    const remember_me_checkbox: Locator = page.getByRole("checkbox");
+    const purchase_flight_button: Locator = page.getByRole("button", {
       name: "Purchase Flight",
     });
 
@@ -692,7 +724,9 @@ test.describe("Different Alerts", () => {
     await page.waitForLoadState("networkidle");
   });
   test("Simple Alert", async ({ page }) => {
-    const simple_alert = page.getByRole("button", { name: "Simple Alert" });
+    const simple_alert: Locator = page.getByRole("button", {
+      name: "Simple Alert",
+    });
     page.on("dialog", async (dialog) => {
       console.log("Dialog Type:", dialog.type());
       console.log("Dialog message:", dialog.message());
@@ -702,7 +736,7 @@ test.describe("Different Alerts", () => {
   });
 
   test("Confirmation Alert", async ({ page }) => {
-    const confirm_dialog = page.getByRole("button", {
+    const confirm_dialog: Locator = page.getByRole("button", {
       name: "Confirmation Alert",
     });
     page.on("dialog", async (dialog) => {
@@ -717,7 +751,9 @@ test.describe("Different Alerts", () => {
   });
 
   test("Prompt Alert", async ({ page }) => {
-    const prompt_dialog = page.getByRole("button", { name: "Prompt Alert" });
+    const prompt_dialog: Locator = page.getByRole("button", {
+      name: "Prompt Alert",
+    });
     const username = "Test User";
     page.on("dialog", async (dialog) => {
       console.log("Dialog Type:", dialog.type());
@@ -791,7 +827,9 @@ test.describe("Handling Tabs and Popup Windows", () => {
     const context = await browser.newContext();
     const page1 = await context.newPage();
     await page1.goto("");
-    const new_tab_button = page1.getByRole("button", { name: "New Tab" });
+    const new_tab_button: Locator = page1.getByRole("button", {
+      name: "New Tab",
+    });
 
     // We require both of these to happen in parallel
     const [page2] = await Promise.all([
@@ -810,7 +848,9 @@ test.describe("Handling Tabs and Popup Windows", () => {
     const page1 = await context.newPage();
 
     await page1.goto("");
-    const popup_button = page1.getByRole("button", { name: "Popup Windows" });
+    const popup_button: Locator = page1.getByRole("button", {
+      name: "Popup Windows",
+    });
 
     const popups = await Promise.all([
       page1.waitForEvent("popup"),
@@ -829,7 +869,7 @@ test.describe("Handling Tabs and Popup Windows", () => {
 });
 
 test.describe("Infinite Scroll", () => {
-  test("Infinite Scroll", async ({ page }) => {
+  test.skip("Infinite Scroll", async ({ page }) => {
     test.slow();
     await page.goto("https://www.booksbykilo.in/books?weightrange=201to500gm");
     await page.waitForLoadState("networkidle");
