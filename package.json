@@ -2,7 +2,14 @@
   "name": "test_automation_practice_blogspot_playwright",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --ui",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "report:show": "npx playwright show-report",
+    "report:json": "npx playwright test --reporter=json"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nyn-aws/Test_Automation_Practice_Blogspot_Playwright.git"

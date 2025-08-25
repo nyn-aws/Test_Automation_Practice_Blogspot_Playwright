@@ -1,38 +1,41 @@
 import { test, expect, Locator, chromium } from "@playwright/test";
+import fs from "fs";
 
-test.describe("Playwright Actions and  Assertions", () => {
+test.describe("Playwright Actions and Assertions", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("");
     await page.waitForLoadState("networkidle");
   });
+
   test("Text Input and assertions", async ({ page }) => {
     // Locators
-    // note since these fields have no name attribute, so what playwright does is first it looks for the label
-    // associated with these, if it doesnt find any then it falls back to next field that is placeholder
+    // Note: since these fields have no name attribute,
+    // Playwright first looks for an associated label.
+    // If no label is found, it falls back to the placeholder attribute.
     const name = page.getByRole("textbox", { name: "Enter Name" });
     const email = page.getByPlaceholder("Enter EMail");
     const phone = page.getByPlaceholder("Enter Phone");
     const address = page.getByRole("textbox", { name: "Address:" });
 
-    // values
+    // Values
     const name_value = "John";
     const email_value = "email@email.com";
     const phone_value = "123456789";
     const address_value =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-    // assertions before actions
+    // Assertions before actions
     // Visible
     await expect(name).toBeVisible();
     await expect(email).toBeVisible();
     await expect(phone).toBeVisible();
     await expect(address).toBeVisible();
-    // enabled
+    // Enabled
     await expect(name).toBeEnabled();
     await expect(email).toBeEnabled();
     await expect(phone).toBeEnabled();
     await expect(address).toBeEnabled();
-    // value and attribute assertions
+    // Value and attribute assertions
     await expect(name).toHaveValue("");
     expect(await name.getAttribute("maxlength")).toBe("15");
     await expect(email).toHaveValue("");
@@ -41,12 +44,13 @@ test.describe("Playwright Actions and  Assertions", () => {
     expect(await phone.getAttribute("maxlength")).toBe("10");
     await expect(address).toHaveValue("");
 
-    // actions
+    // Actions
     await name.fill(name_value);
     await email.fill(email_value);
     await phone.fill(phone_value);
     await address.fill(address_value);
-    // assertions after actions
+
+    // Assertions after actions
     await expect(name).toHaveValue(name_value);
     await expect(email).toHaveValue(email_value);
     await expect(phone).toHaveValue(phone_value);
@@ -54,7 +58,7 @@ test.describe("Playwright Actions and  Assertions", () => {
   });
 
   test("Checkbox and Radio Button assertions", async ({ page }) => {
-    // locators
+    // Locators
     const gender = page.getByText("Gender:");
     const radio_male = page.getByRole("radio", { name: "Male", exact: true });
     const radio_female = page.getByRole("radio", { name: "Female" });
@@ -84,7 +88,7 @@ test.describe("Playwright Actions and  Assertions", () => {
       await expect(checkbox).toBeEnabled();
       await expect(checkbox).not.toBeChecked();
     }
-    // visibility
+    // Visibility
     await expect(gender).toBeVisible();
     await expect(radio_male).toBeVisible();
     await expect(radio_male).toBeEnabled();
@@ -92,7 +96,7 @@ test.describe("Playwright Actions and  Assertions", () => {
     await expect(radio_female).toBeEnabled();
     await expect(days).toBeVisible();
 
-    // actions
+    // Actions
     await radio_male.check();
     await monday.check();
     await tuesday.check();
@@ -100,7 +104,7 @@ test.describe("Playwright Actions and  Assertions", () => {
     await thursday.check();
     await friday.check();
 
-    // assertions after actions
+    // Assertions after actions
     await expect(radio_male).toBeChecked();
     expect(await radio_female.isChecked()).toBe(false);
     await expect(monday).toBeChecked();
@@ -136,7 +140,7 @@ test.describe("Playwright Actions and  Assertions", () => {
       (e) => e.trim()
     );
 
-    // Print all dropdown Options
+    // Print all dropdown options
     console.log(country_dropdown_options);
     console.log(colors_dropdown_options);
     console.log(sorted_list_dropdown_options);
@@ -148,7 +152,7 @@ test.describe("Playwright Actions and  Assertions", () => {
     await country_dropdown_default.selectOption("India");
     await expect(country_dropdown_default).toHaveValue("india");
 
-    // Colors Multiselect dropdown
+    // Colors Multi-select dropdown
     await expect(colors_dropdown_options).toHaveLength(7);
     await colors_dropdown_default.selectOption(["Yellow", "White"]);
 
@@ -228,9 +232,9 @@ test.describe("Playwright Actions and  Assertions", () => {
 
     expect(dynamic_table).toBeVisible();
 
-    // For Chrome Process get the value of CPU Load
-    // in dynamic table order of rows and column may change so
-    // First we have to identify the column order before targetting rows
+    // For Chrome Process, get the value of CPU Load.
+    // In dynamic tables, the order of rows and columns may change.
+    // First, we have to identify the column order before targeting rows.
     const column_names_locator: Locator[] = await dynamic_table_head.all();
     let column_names_array: string[] = [];
     let process_name_index: number;
@@ -258,7 +262,7 @@ test.describe("Playwright Actions and  Assertions", () => {
   });
 
   test("Pagination Web Table", async ({ page }) => {
-    // Objective is read and print all data of pagination table
+    // Objective is to read and print all data of the pagination table
     const pagination_web_table = page.getByText("Pagination Web Table ID Name");
     const pagination_list = pagination_web_table.locator("ul li a");
     const pagination_table = pagination_web_table.locator("table");
@@ -272,12 +276,110 @@ test.describe("Playwright Actions and  Assertions", () => {
     }
   });
 
-  test("Handling Mouse Actions", async ({ page }) => {
+  test("Handling Mouse and Keyboard Actions", async ({ page }) => {
     // Handling Hover actions
     const point_me_button = page.getByRole("button", { name: "Point Me" });
     await point_me_button.hover();
     await page.locator(".dropdown-content  a").first().hover();
-    await page.waitForTimeout(5000);
+
+    // Double click
+    await expect(page.locator("#field2")).toHaveValue("");
+    const copy_text_button = page.getByRole("button", { name: "Copy Text" });
+    await copy_text_button.dblclick();
+    await expect(page.locator("#field2")).toHaveValue("Hello World!");
+
+    // Drag and Drop
+    const source_element = page.getByText("Drag me to my target");
+    const target_element = page.locator("#droppable");
+    await source_element.dragTo(target_element);
+    await page.waitForTimeout(1000);
+    await expect(target_element).toHaveText("Dropped!");
+
+    // Slider element
+    const slider_element_1 = page.locator(".ui-slider-handle ").first();
+    const slider_element_2 = page.locator(".ui-slider-handle ").nth(1);
+    const price_range_locator = page.getByLabel("Price range:");
+    console.log(await price_range_locator.inputValue());
+    // Press ArrowLeft 5 times using loop
+    for (let i = 0; i < 5; i++) {
+      await slider_element_1.press("ArrowLeft");
+    }
+    // Press ArrowRight 15 times using loop
+    for (let i = 0; i < 15; i++) {
+      await slider_element_2.press("ArrowRight");
+    }
+    expect(await price_range_locator.inputValue()).toEqual("$70 - $315");
+
+    // Selecting an element from Scrolling Dropdown
+    const combobox_input = page.locator("#comboBox");
+    await combobox_input.click();
+    const item_86 = page.locator('//div[@class="option"][text()="Item 86"]');
+    await item_86.click();
+    await expect(combobox_input).toHaveValue("Item 86");
+  });
+
+  test("Download Files", async ({ page }) => {
+    const download_files_link = page.getByText("Download Files");
+    await download_files_link.click();
+    await page.waitForLoadState("networkidle");
+
+    const download_files_heading = page.getByRole("heading", {
+      name: "Download Files",
+    });
+    await expect(download_files_heading).toBeVisible();
+    const download_text_or_pdf_heading = page.getByRole("heading", {
+      name: "Download a Text or PDF File",
+    });
+
+    await expect(download_text_or_pdf_heading).toBeVisible();
+    const enter_text_field = page.getByRole("textbox", {
+      name: "Enter text",
+    });
+    await expect(enter_text_field).toBeVisible();
+
+    // Info: Whatever text is input in this textbox will be available for download in text or PDF format
+
+    const text_download_button = page.getByRole("button", {
+      name: "Generate and Download Text File",
+    });
+    const pdf_download_button = page.getByRole("button", {
+      name: "Generate and Download PDF File",
+      exact: true,
+    });
+    const pdf_download_button_2 = page.getByRole("button", {
+      name: "Download PDF File",
+      exact: true,
+    });
+
+    await expect(text_download_button).toBeVisible();
+    await expect(pdf_download_button).toBeVisible();
+    await expect(pdf_download_button_2).toBeVisible();
+
+    const download_text_link = page.locator("#txtDownloadLink");
+    const download_pdf_link = page.locator("#pdfDownloadLink");
+    await enter_text_field.fill("This is test data");
+    await text_download_button.click();
+    const [download1] = await Promise.all([
+      page.waitForEvent("download"),
+      download_text_link.click(),
+    ]);
+    // Save downloaded file to desired location
+    const downloadPath = "tests/downloads/" + download1.suggestedFilename();
+    await download1.saveAs(downloadPath);
+    await pdf_download_button.click();
+    const [download2] = await Promise.all([
+      page.waitForEvent("download"),
+      download_pdf_link.click(),
+    ]);
+
+    // Save downloaded file to desired location
+    const downloadPath2 = "tests/downloads/" + download2.suggestedFilename();
+    await download2.saveAs(downloadPath2);
+    await page.waitForLoadState("networkidle");
+    // Asynchronously delete downloaded files
+    await fs.promises.rm("tests/downloads", { recursive: true, force: true });
+
+    await page.waitForLoadState("networkidle");
   });
 });
 
@@ -302,7 +404,7 @@ test.describe("Date Picker", () => {
   });
   test("Date Picker: Type 1", async ({ page }) => {
     // Simple use fill methods
-    // provide string of the date
+    // Provide string of the date
     const jQuery_datepicker = page.locator("#datepicker");
     await expect(jQuery_datepicker).toHaveValue("");
     const date_value = "12/12/2122";
@@ -376,7 +478,7 @@ test.describe("Date Picker", () => {
     await select_year.selectOption("2045");
     await jQuery_datepicker_2.locator(`//*[@data-date='${day}']`).click();
 
-    // assertions
+    // Assertions
     await expect(date_picker_2).toHaveValue(
       `${months.indexOf(month) + 1}/${day}/${year}`
     );
@@ -493,12 +595,12 @@ test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", ()
     }
     console.log(`Flight prices: ${flight_prices.join(", ")}`);
 
-    // Convert string prices → numbers
+    // Convert string prices to numbers
     const prices = flight_prices.map((p) => Number(p.slice(1)));
     console.log(prices);
 
     const sorted_prices = [...prices].sort((a, b) => a - b);
-    console.log(`The Lowest fare is ${sorted_prices[0]}`);
+    console.log(`The lowest fare is ${sorted_prices[0]}`);
 
     const indexOf_lowest_price = prices.indexOf(sorted_prices[0]);
 
@@ -663,7 +765,6 @@ test.describe("Frames", () => {
     await expect(frame4.getByRole("textbox")).toHaveValue("Testing frame 4");
 
     // Nested Frames
-
     const parentFrame = page.frame({
       url: "https://ui.vision/demo/webtest/frames/frame_3.html",
     });
@@ -674,7 +775,7 @@ test.describe("Frames", () => {
       );
       const childFrames = parentFrame.childFrames();
       console.log("Number of child frames:", childFrames.length);
-      // assertion
+      // Assertion
       await expect(childFrames.length).toBeGreaterThan(0);
       for (const childFrame of childFrames) {
         console.log("Child frame URL:", childFrame.url());
@@ -692,12 +793,12 @@ test.describe("Handling Tabs and Popup Windows", () => {
     await page1.goto("");
     const new_tab_button = page1.getByRole("button", { name: "New Tab" });
 
-    // We require both of this to happen parallely
+    // We require both of these to happen in parallel
     const [page2] = await Promise.all([
       context.waitForEvent("page"),
       new_tab_button.click(),
     ]);
-    await console.log(page2.url());
+    console.log(page2.url());
 
     // Use this approach when we have more than two pages
     const pages = context.pages();
@@ -738,13 +839,13 @@ test.describe("Infinite Scroll", () => {
         return document.body.scrollHeight;
       });
 
-      // Incorrect way:: Inside page.evaluate, the function runs in the browser context, not in Node/Playwright’s context.
+      // Incorrect way: Inside page.evaluate, the function runs in the browser context, not in Node/Playwright’s context.
       // That means variables like current_height don’t exist there unless you pass them in explicitly.
       // await page.evaluate(() => {
       //   window.scrollTo(0, current_height);
       // });
 
-      // correct way
+      // Correct way
       await page.evaluate((height_value) => {
         window.scrollTo(0, height_value);
       }, current_height);
