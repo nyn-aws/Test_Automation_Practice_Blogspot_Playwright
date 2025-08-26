@@ -31,7 +31,7 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: "https://testautomationpractice.blogspot.com/",
-    headless: false,
+    headless: true,
     browserName: "chromium",
     screenshot: "on",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
