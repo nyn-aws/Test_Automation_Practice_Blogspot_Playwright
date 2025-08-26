@@ -1,7 +1,5 @@
-import { test, expect, Locator, chromium } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import { Homepage } from "../src/pages/homepage";
-import Datatables_Homepage from "../src/pages/datatable_homepage";
-import BlazeDemoHomepage from "../src/pages/blazedemo";
 import fs from "fs";
 
 test.describe("Playwright Actions and Assertions", () => {
@@ -37,7 +35,7 @@ test.describe("Playwright Actions and Assertions", () => {
       // Locators
       // Note: since these fields have no name attribute,
       // Playwright first looks for an associated label.
-      // If no label is found, it falls back to the placeholder attribute.
+      // If no label is found, itfalls back to the placeholder attribute.
       // Values
       const name_value = "John";
       const email_value = "email@email.com";
@@ -242,8 +240,7 @@ test.describe("Playwright Actions and Assertions", () => {
 
       // Read all the data from the table
       console.log("Printing all the table data");
-      const all_rows: Locator[] =
-        await homepage.locators.staticWebTableRows.all();
+      const all_rows = await homepage.locators.staticWebTableRows.all();
 
       for (const row of all_rows) {
         // Pretty print all row data
@@ -292,7 +289,7 @@ test.describe("Playwright Actions and Assertions", () => {
       // For Chrome Process, get the value of CPU Load.
       // In dynamic tables, the order of rows and columns may change.
       // First, we have to identify the column order before targeting rows.
-      const column_names_locator: Locator[] =
+      const column_names_locator =
         await homepage.locators.dynamicWebTableHead.all();
       let column_names_array: string[] = [];
       let process_name_index: number;
@@ -582,307 +579,6 @@ test.describe("Date Picker", () => {
   );
 });
 
-test.describe("Pagination Web Table : https://datatables.net/", () => {
-  let datatablesHomepage: Datatables_Homepage;
-  test.beforeEach(async ({ page }) => {
-    datatablesHomepage = new Datatables_Homepage(page);
-    await datatablesHomepage.goto();
-  });
-
-  test(
-    "Pagination Web Table - Read all pages",
-    {
-      tag: "@regression",
-      annotation: [
-        {
-          type: "functional",
-          description:
-            "Reads and prints all data from a paginated web table across multiple pages by iterating through next buttons.",
-        },
-      ],
-    },
-    async ({ page }) => {
-      while (true) {
-        const all_rows =
-          await datatablesHomepage.locators.dataTablesExampleRows.all();
-        for (const row of all_rows) {
-          console.log(await row.innerText());
-        }
-        if (
-          await datatablesHomepage.locators.nextButtonDataTables.isEnabled()
-        ) {
-          await datatablesHomepage.locators.nextButtonDataTables.click();
-        } else {
-          break;
-        }
-      }
-    }
-  );
-
-  test(
-    "Pagination Web Table - Change number of rows",
-    {
-      tag: "@smoke",
-      annotation: [
-        {
-          type: "functional",
-          description:
-            "Verifies the ability to change the number of rows displayed in a paginated web table using a dropdown.",
-        },
-      ],
-    },
-    async ({ page }) => {
-      await expect(
-        datatablesHomepage.locators.dataTablesExampleRows
-      ).toHaveCount(10);
-      await datatablesHomepage.locators.numberOfRowsDropdown.selectOption("25");
-      await expect(
-        datatablesHomepage.locators.dataTablesExampleRows
-      ).toHaveCount(25);
-      await datatablesHomepage.locators.numberOfRowsDropdown.selectOption("50");
-      await expect(
-        datatablesHomepage.locators.dataTablesExampleRows
-      ).toHaveCount(50);
-      await datatablesHomepage.locators.numberOfRowsDropdown.selectOption(
-        "100"
-      );
-      await expect(
-        datatablesHomepage.locators.dataTablesExampleRows
-      ).toHaveCount(57);
-    }
-  );
-
-  test(
-    "Pagination Web Table - Search validation",
-    {
-      tag: "@smoke",
-      annotation: [
-        {
-          type: "functional",
-          description:
-            "Validates the search functionality of a paginated web table by entering a search term and asserting the presence of the matching record.",
-        },
-      ],
-    },
-    async ({ page }) => {
-      const name_to_search = "Michael Bruce";
-
-      await datatablesHomepage.locators.searchInDataTables.fill(name_to_search);
-      await page.waitForLoadState("networkidle");
-
-      for (const row of await datatablesHomepage.locators.dataTablesExampleRows.all()) {
-        const row_data = await row.allInnerTexts();
-        if (row_data.includes(name_to_search)) {
-          console.log("Found:", row_data);
-          expect(row_data).toContain(name_to_search);
-        }
-      }
-    }
-  );
-});
-
-test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", () => {
-  let blazeDemoHomepage: BlazeDemoHomepage;
-  test(
-    "Flight Booking Automation",
-    {
-      tag: "@regression",
-      annotation: [
-        {
-          type: "e2e",
-          description:
-            "Automates the flight booking process on BlazeDemo, including selection of departure/destination, finding flights, filling reservation form, and confirming purchase.",
-        },
-      ],
-    },
-    async ({ page }) => {
-      blazeDemoHomepage = new BlazeDemoHomepage(page);
-      await blazeDemoHomepage.goto();
-
-      // Validate welcome heading
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoWelcomeHeading
-      ).toBeVisible();
-
-      // Dropdowns
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoDepartureDropdown
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoDestinationDropdown
-      ).toBeVisible();
-
-      // Validate default dropdown values
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoDepartureDropdown
-      ).toHaveValue("Paris");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoDestinationDropdown
-      ).toHaveValue("Buenos Aires");
-
-      // Select departure = Boston, destination = London
-      await blazeDemoHomepage.locators.blazeDemoDepartureDropdown.selectOption(
-        "Boston"
-      );
-      await blazeDemoHomepage.locators.blazeDemoDestinationDropdown.selectOption(
-        "London"
-      );
-
-      // Click Find Flights
-      await blazeDemoHomepage.locators.blazeDemoFindFlightsButton.click();
-      await page.waitForLoadState("networkidle");
-
-      // Validate flights page
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoFlightDetailsHeading
-      ).toBeVisible();
-
-      // Read flight details
-      console.log(
-        `Available flights: ${await blazeDemoHomepage.locators.blazeDemoFlightRows.count()}`
-      );
-      await expect(blazeDemoHomepage.locators.blazeDemoFlightRows).toHaveCount(
-        5
-      );
-
-      // Extract all prices
-      const flight_prices: string[] = [];
-      for (const row of await blazeDemoHomepage.locators.blazeDemoFlightRows.all()) {
-        const price = await row.locator("td:nth-child(7)").innerText();
-        flight_prices.push(price);
-      }
-      console.log(`Flight prices: ${flight_prices.join(", ")}`);
-
-      // Convert string prices to numbers
-      const prices = flight_prices.map((p) => Number(p.slice(1)));
-      console.log(prices);
-
-      const sorted_prices = [...prices].sort((a, b) => a - b);
-      console.log(`The lowest fare is ${sorted_prices[0]}`);
-
-      const indexOf_lowest_price = prices.indexOf(sorted_prices[0]);
-
-      // Select the lowest-priced flight
-      for (const row of await blazeDemoHomepage.locators.blazeDemoFlightRows.all()) {
-        const row_Data = row.locator("td").allInnerTexts();
-        if ((await row_Data).includes(flight_prices[indexOf_lowest_price])) {
-          await row.getByRole("button").click();
-          await page.waitForLoadState("networkidle");
-          break;
-        }
-      }
-
-      // Reservation form
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoReservationHeading
-      ).toBeVisible();
-
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourNameInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourAddressInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourCityInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourStateInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourZipCodeInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoCardTypeDropdown
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoCreditCardNumberInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoCreditCardMonthInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoCreditCardYearInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoNameOnCardInput
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoRememberMeCheckbox
-      ).toBeVisible();
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoPurchaseFlightButton
-      ).toBeVisible();
-
-      // Fill in form
-      await blazeDemoHomepage.locators.blazeDemoYourNameInput.fill("John Doe");
-      await blazeDemoHomepage.locators.blazeDemoYourAddressInput.fill(
-        "123 Main St"
-      );
-      await blazeDemoHomepage.locators.blazeDemoYourCityInput.fill("Anytown");
-      await blazeDemoHomepage.locators.blazeDemoYourStateInput.fill("CA");
-      await blazeDemoHomepage.locators.blazeDemoYourZipCodeInput.fill("12345");
-      await blazeDemoHomepage.locators.blazeDemoCardTypeDropdown.selectOption(
-        "Visa"
-      );
-      await blazeDemoHomepage.locators.blazeDemoCreditCardNumberInput.fill(
-        "4111111111111111"
-      );
-      await blazeDemoHomepage.locators.blazeDemoCreditCardMonthInput.fill("12");
-      await blazeDemoHomepage.locators.blazeDemoCreditCardYearInput.fill(
-        "2025"
-      );
-      await blazeDemoHomepage.locators.blazeDemoNameOnCardInput.fill(
-        "John Doe"
-      );
-      await blazeDemoHomepage.locators.blazeDemoRememberMeCheckbox.check();
-
-      // Assertions on entered values
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourNameInput
-      ).toHaveValue("John Doe");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourAddressInput
-      ).toHaveValue("123 Main St");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourCityInput
-      ).toHaveValue("Anytown");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourStateInput
-      ).toHaveValue("CA");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoYourZipCodeInput
-      ).toHaveValue("12345");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoCardTypeDropdown
-      ).toHaveValue("visa");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoCreditCardNumberInput
-      ).toHaveValue("4111111111111111");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoCreditCardMonthInput
-      ).toHaveValue("12");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoCreditCardYearInput
-      ).toHaveValue("2025");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoNameOnCardInput
-      ).toHaveValue("John Doe");
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoRememberMeCheckbox
-      ).toBeChecked();
-
-      // Submit form
-      await blazeDemoHomepage.locators.blazeDemoPurchaseFlightButton.click();
-
-      // Confirmation
-      await expect(
-        blazeDemoHomepage.locators.blazeDemoPurchaseConfirmation
-      ).toBeVisible();
-    }
-  );
-});
-
 test.describe("Different Alerts", () => {
   let homepage: Homepage;
   test.beforeEach(async ({ page }) => {
@@ -1100,60 +796,6 @@ test.describe("Handling Tabs and Popup Windows", () => {
         console.log(`- ${await popup.title()}`);
         console.log(`- ${await popup.url()}`);
       });
-    }
-  );
-});
-
-test.describe("Infinite Scroll", () => {
-  test(
-    "Infinite Scroll",
-    {
-      tag: "@regression",
-      annotation: [
-        {
-          type: "e2e",
-          description:
-            "Tests infinite scroll functionality on a website by continuously scrolling down until no new content is loaded.",
-        },
-      ],
-    },
-    async ({ page }) => {
-      test.skip(); // This is the correct placement for test.skip()
-      test.slow();
-
-      await page.goto(
-        "https://www.booksbykilo.in/books?weightrange=201to500gm"
-      );
-      await page.waitForLoadState("networkidle");
-
-      while (true) {
-        let current_height = await page.evaluate(() => {
-          return document.body.scrollHeight;
-        });
-
-        // Incorrect way: Inside page.evaluate, the function runs in the browser context, not in Node/Playwright’s context.
-        // That means variables like current_height don’t exist there unless you pass them in explicitly.
-        // await page.evaluate(() => {
-        //   window.scrollTo(0, current_height);
-        // });
-
-        // Correct way
-        await page.evaluate((height_value) => {
-          window.scrollTo(0, height_value);
-        }, current_height);
-        await page.waitForTimeout(2000);
-        await page.waitForLoadState("networkidle");
-
-        let new_height = await page.evaluate(() => {
-          return document.body.scrollHeight;
-        });
-
-        if (new_height === current_height) {
-          break;
-        }
-      }
-
-      console.log("Infinite scroll completed");
     }
   );
 });
