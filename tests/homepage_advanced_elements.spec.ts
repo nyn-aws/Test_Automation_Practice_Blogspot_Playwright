@@ -1,5 +1,7 @@
 import { test, expect, Locator, chromium } from "@playwright/test";
 import { Homepage } from "../src/pages/homepage";
+import Datatables_Homepage from "../src/pages/datatable_homepage";
+import BlazeDemoHomepage from "../src/pages/blazedemo";
 import fs from "fs";
 
 test.describe("Playwright Actions and Assertions", () => {
@@ -581,11 +583,10 @@ test.describe("Date Picker", () => {
 });
 
 test.describe("Pagination Web Table : https://datatables.net/", () => {
-  let homepage: Homepage;
+  let datatablesHomepage: Datatables_Homepage;
   test.beforeEach(async ({ page }) => {
-    homepage = new Homepage(page);
-    await page.goto("https://datatables.net/");
-    await page.waitForLoadState("networkidle");
+    datatablesHomepage = new Datatables_Homepage(page);
+    await datatablesHomepage.goto();
   });
 
   test(
@@ -602,12 +603,15 @@ test.describe("Pagination Web Table : https://datatables.net/", () => {
     },
     async ({ page }) => {
       while (true) {
-        const all_rows = await homepage.locators.dataTablesExampleRows.all();
+        const all_rows =
+          await datatablesHomepage.locators.dataTablesExampleRows.all();
         for (const row of all_rows) {
           console.log(await row.innerText());
         }
-        if (await homepage.locators.nextButtonDataTables.isEnabled()) {
-          await homepage.locators.nextButtonDataTables.click();
+        if (
+          await datatablesHomepage.locators.nextButtonDataTables.isEnabled()
+        ) {
+          await datatablesHomepage.locators.nextButtonDataTables.click();
         } else {
           break;
         }
@@ -628,13 +632,23 @@ test.describe("Pagination Web Table : https://datatables.net/", () => {
       ],
     },
     async ({ page }) => {
-      await expect(homepage.locators.dataTablesExampleRows).toHaveCount(10);
-      await homepage.locators.numberOfRowsDropdown.selectOption("25");
-      await expect(homepage.locators.dataTablesExampleRows).toHaveCount(25);
-      await homepage.locators.numberOfRowsDropdown.selectOption("50");
-      await expect(homepage.locators.dataTablesExampleRows).toHaveCount(50);
-      await homepage.locators.numberOfRowsDropdown.selectOption("100");
-      await expect(homepage.locators.dataTablesExampleRows).toHaveCount(57);
+      await expect(
+        datatablesHomepage.locators.dataTablesExampleRows
+      ).toHaveCount(10);
+      await datatablesHomepage.locators.numberOfRowsDropdown.selectOption("25");
+      await expect(
+        datatablesHomepage.locators.dataTablesExampleRows
+      ).toHaveCount(25);
+      await datatablesHomepage.locators.numberOfRowsDropdown.selectOption("50");
+      await expect(
+        datatablesHomepage.locators.dataTablesExampleRows
+      ).toHaveCount(50);
+      await datatablesHomepage.locators.numberOfRowsDropdown.selectOption(
+        "100"
+      );
+      await expect(
+        datatablesHomepage.locators.dataTablesExampleRows
+      ).toHaveCount(57);
     }
   );
 
@@ -653,10 +667,10 @@ test.describe("Pagination Web Table : https://datatables.net/", () => {
     async ({ page }) => {
       const name_to_search = "Michael Bruce";
 
-      await homepage.locators.searchInDataTables.fill(name_to_search);
+      await datatablesHomepage.locators.searchInDataTables.fill(name_to_search);
       await page.waitForLoadState("networkidle");
 
-      for (const row of await homepage.locators.dataTablesExampleRows.all()) {
+      for (const row of await datatablesHomepage.locators.dataTablesExampleRows.all()) {
         const row_data = await row.allInnerTexts();
         if (row_data.includes(name_to_search)) {
           console.log("Found:", row_data);
@@ -668,7 +682,7 @@ test.describe("Pagination Web Table : https://datatables.net/", () => {
 });
 
 test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", () => {
-  let homepage: Homepage;
+  let blazeDemoHomepage: BlazeDemoHomepage;
   test(
     "Flight Booking Automation",
     {
@@ -682,51 +696,58 @@ test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", ()
       ],
     },
     async ({ page }) => {
-      homepage = new Homepage(page);
-      // Navigate to homepage
-      await page.goto("https://blazedemo.com/");
+      blazeDemoHomepage = new BlazeDemoHomepage(page);
+      await blazeDemoHomepage.goto();
 
       // Validate welcome heading
-      await expect(homepage.locators.blazeDemoWelcomeHeading).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoWelcomeHeading
+      ).toBeVisible();
 
       // Dropdowns
-      await expect(homepage.locators.blazeDemoDepartureDropdown).toBeVisible();
       await expect(
-        homepage.locators.blazeDemoDestinationDropdown
+        blazeDemoHomepage.locators.blazeDemoDepartureDropdown
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoDestinationDropdown
       ).toBeVisible();
 
       // Validate default dropdown values
-      await expect(homepage.locators.blazeDemoDepartureDropdown).toHaveValue(
-        "Paris"
-      );
-      await expect(homepage.locators.blazeDemoDestinationDropdown).toHaveValue(
-        "Buenos Aires"
-      );
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoDepartureDropdown
+      ).toHaveValue("Paris");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoDestinationDropdown
+      ).toHaveValue("Buenos Aires");
 
       // Select departure = Boston, destination = London
-      await homepage.locators.blazeDemoDepartureDropdown.selectOption("Boston");
-      await homepage.locators.blazeDemoDestinationDropdown.selectOption(
+      await blazeDemoHomepage.locators.blazeDemoDepartureDropdown.selectOption(
+        "Boston"
+      );
+      await blazeDemoHomepage.locators.blazeDemoDestinationDropdown.selectOption(
         "London"
       );
 
       // Click Find Flights
-      await homepage.locators.blazeDemoFindFlightsButton.click();
+      await blazeDemoHomepage.locators.blazeDemoFindFlightsButton.click();
       await page.waitForLoadState("networkidle");
 
       // Validate flights page
       await expect(
-        homepage.locators.blazeDemoFlightDetailsHeading
+        blazeDemoHomepage.locators.blazeDemoFlightDetailsHeading
       ).toBeVisible();
 
       // Read flight details
       console.log(
-        `Available flights: ${await homepage.locators.blazeDemoFlightRows.count()}`
+        `Available flights: ${await blazeDemoHomepage.locators.blazeDemoFlightRows.count()}`
       );
-      await expect(homepage.locators.blazeDemoFlightRows).toHaveCount(5);
+      await expect(blazeDemoHomepage.locators.blazeDemoFlightRows).toHaveCount(
+        5
+      );
 
       // Extract all prices
       const flight_prices: string[] = [];
-      for (const row of await homepage.locators.blazeDemoFlightRows.all()) {
+      for (const row of await blazeDemoHomepage.locators.blazeDemoFlightRows.all()) {
         const price = await row.locator("td:nth-child(7)").innerText();
         flight_prices.push(price);
       }
@@ -742,7 +763,7 @@ test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", ()
       const indexOf_lowest_price = prices.indexOf(sorted_prices[0]);
 
       // Select the lowest-priced flight
-      for (const row of await homepage.locators.blazeDemoFlightRows.all()) {
+      for (const row of await blazeDemoHomepage.locators.blazeDemoFlightRows.all()) {
         const row_Data = row.locator("td").allInnerTexts();
         if ((await row_Data).includes(flight_prices[indexOf_lowest_price])) {
           await row.getByRole("button").click();
@@ -752,81 +773,111 @@ test.describe("BlazeDemo: Flight Booking Automation: https://blazedemo.com/", ()
       }
 
       // Reservation form
-      await expect(homepage.locators.blazeDemoReservationHeading).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoReservationHeading
+      ).toBeVisible();
 
-      await expect(homepage.locators.blazeDemoYourNameInput).toBeVisible();
-      await expect(homepage.locators.blazeDemoYourAddressInput).toBeVisible();
-      await expect(homepage.locators.blazeDemoYourCityInput).toBeVisible();
-      await expect(homepage.locators.blazeDemoYourStateInput).toBeVisible();
-      await expect(homepage.locators.blazeDemoYourZipCodeInput).toBeVisible();
-      await expect(homepage.locators.blazeDemoCardTypeDropdown).toBeVisible();
       await expect(
-        homepage.locators.blazeDemoCreditCardNumberInput
+        blazeDemoHomepage.locators.blazeDemoYourNameInput
       ).toBeVisible();
       await expect(
-        homepage.locators.blazeDemoCreditCardMonthInput
+        blazeDemoHomepage.locators.blazeDemoYourAddressInput
       ).toBeVisible();
       await expect(
-        homepage.locators.blazeDemoCreditCardYearInput
+        blazeDemoHomepage.locators.blazeDemoYourCityInput
       ).toBeVisible();
-      await expect(homepage.locators.blazeDemoNameOnCardInput).toBeVisible();
-      await expect(homepage.locators.blazeDemoRememberMeCheckbox).toBeVisible();
       await expect(
-        homepage.locators.blazeDemoPurchaseFlightButton
+        blazeDemoHomepage.locators.blazeDemoYourStateInput
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoYourZipCodeInput
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoCardTypeDropdown
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoCreditCardNumberInput
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoCreditCardMonthInput
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoCreditCardYearInput
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoNameOnCardInput
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoRememberMeCheckbox
+      ).toBeVisible();
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoPurchaseFlightButton
       ).toBeVisible();
 
       // Fill in form
-      await homepage.locators.blazeDemoYourNameInput.fill("John Doe");
-      await homepage.locators.blazeDemoYourAddressInput.fill("123 Main St");
-      await homepage.locators.blazeDemoYourCityInput.fill("Anytown");
-      await homepage.locators.blazeDemoYourStateInput.fill("CA");
-      await homepage.locators.blazeDemoYourZipCodeInput.fill("12345");
-      await homepage.locators.blazeDemoCardTypeDropdown.selectOption("Visa");
-      await homepage.locators.blazeDemoCreditCardNumberInput.fill(
-        "4111111111111111"
-      );
-      await homepage.locators.blazeDemoCreditCardMonthInput.fill("12");
-      await homepage.locators.blazeDemoCreditCardYearInput.fill("2025");
-      await homepage.locators.blazeDemoNameOnCardInput.fill("John Doe");
-      await homepage.locators.blazeDemoRememberMeCheckbox.check();
-
-      // Assertions on entered values
-      await expect(homepage.locators.blazeDemoYourNameInput).toHaveValue(
-        "John Doe"
-      );
-      await expect(homepage.locators.blazeDemoYourAddressInput).toHaveValue(
+      await blazeDemoHomepage.locators.blazeDemoYourNameInput.fill("John Doe");
+      await blazeDemoHomepage.locators.blazeDemoYourAddressInput.fill(
         "123 Main St"
       );
-      await expect(homepage.locators.blazeDemoYourCityInput).toHaveValue(
-        "Anytown"
+      await blazeDemoHomepage.locators.blazeDemoYourCityInput.fill("Anytown");
+      await blazeDemoHomepage.locators.blazeDemoYourStateInput.fill("CA");
+      await blazeDemoHomepage.locators.blazeDemoYourZipCodeInput.fill("12345");
+      await blazeDemoHomepage.locators.blazeDemoCardTypeDropdown.selectOption(
+        "Visa"
       );
-      await expect(homepage.locators.blazeDemoYourStateInput).toHaveValue("CA");
-      await expect(homepage.locators.blazeDemoYourZipCodeInput).toHaveValue(
-        "12345"
+      await blazeDemoHomepage.locators.blazeDemoCreditCardNumberInput.fill(
+        "4111111111111111"
       );
-      await expect(homepage.locators.blazeDemoCardTypeDropdown).toHaveValue(
-        "visa"
-      );
-      await expect(
-        homepage.locators.blazeDemoCreditCardNumberInput
-      ).toHaveValue("4111111111111111");
-      await expect(homepage.locators.blazeDemoCreditCardMonthInput).toHaveValue(
-        "12"
-      );
-      await expect(homepage.locators.blazeDemoCreditCardYearInput).toHaveValue(
+      await blazeDemoHomepage.locators.blazeDemoCreditCardMonthInput.fill("12");
+      await blazeDemoHomepage.locators.blazeDemoCreditCardYearInput.fill(
         "2025"
       );
-      await expect(homepage.locators.blazeDemoNameOnCardInput).toHaveValue(
+      await blazeDemoHomepage.locators.blazeDemoNameOnCardInput.fill(
         "John Doe"
       );
-      await expect(homepage.locators.blazeDemoRememberMeCheckbox).toBeChecked();
+      await blazeDemoHomepage.locators.blazeDemoRememberMeCheckbox.check();
+
+      // Assertions on entered values
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoYourNameInput
+      ).toHaveValue("John Doe");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoYourAddressInput
+      ).toHaveValue("123 Main St");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoYourCityInput
+      ).toHaveValue("Anytown");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoYourStateInput
+      ).toHaveValue("CA");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoYourZipCodeInput
+      ).toHaveValue("12345");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoCardTypeDropdown
+      ).toHaveValue("visa");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoCreditCardNumberInput
+      ).toHaveValue("4111111111111111");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoCreditCardMonthInput
+      ).toHaveValue("12");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoCreditCardYearInput
+      ).toHaveValue("2025");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoNameOnCardInput
+      ).toHaveValue("John Doe");
+      await expect(
+        blazeDemoHomepage.locators.blazeDemoRememberMeCheckbox
+      ).toBeChecked();
 
       // Submit form
-      await homepage.locators.blazeDemoPurchaseFlightButton.click();
+      await blazeDemoHomepage.locators.blazeDemoPurchaseFlightButton.click();
 
       // Confirmation
       await expect(
-        homepage.locators.blazeDemoPurchaseConfirmation
+        blazeDemoHomepage.locators.blazeDemoPurchaseConfirmation
       ).toBeVisible();
     }
   );

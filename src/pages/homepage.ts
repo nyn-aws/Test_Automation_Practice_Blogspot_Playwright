@@ -50,7 +50,6 @@ export class Homepage {
     const uiDatepickerWidget = this.page.locator(
       "//div[contains(@class, 'ui-datepicker ui-widget')] "
     );
-    const dataTablesExampleRows = this.page.locator("#example tbody tr");
     const flightDetailsTable = this.page.getByRole("table");
 
     return {
@@ -261,47 +260,6 @@ export class Homepage {
       uiDatepickerDivType2: this.page.locator("#ui-datepicker-div"),
       selectMonthDropdown: this.page.getByLabel("Select month"),
       selectYearDropdown: this.page.getByLabel("Select year"),
-
-      // Pagination Web Table : https://datatables.net/
-      dataTablesExampleRows: this.page.locator("#example tbody tr"),
-      nextButtonDataTables: this.page.locator("//button[@aria-label='Next']"),
-      numberOfRowsDropdown: this.page.locator("#dt-length-0"),
-      searchInDataTables: this.page.getByRole("searchbox", { name: "Search:" }),
-
-      // BlazeDemo: Flight Booking Automation
-      blazeDemoWelcomeHeading: this.page.getByRole("heading", {
-        name: "Welcome to the Simple Travel",
-      }),
-      blazeDemoDepartureDropdown: this.page.locator('select[name="fromPort"]'),
-      blazeDemoDestinationDropdown: this.page.locator('select[name="toPort"]'),
-      blazeDemoFindFlightsButton: this.page.getByRole("button", {
-        name: "Find Flights",
-      }),
-      blazeDemoFlightDetailsHeading: this.page.getByText(
-        "Flights from Boston to London:"
-      ),
-      blazeDemoFlightDetailsTable: flightDetailsTable,
-      blazeDemoFlightRows: flightDetailsTable.locator("tbody tr"),
-      blazeDemoReservationHeading: this.page.getByRole("heading", {
-        name: "has been reserved",
-      }),
-      blazeDemoYourNameInput: this.page.getByPlaceholder("First Last"),
-      blazeDemoYourAddressInput: this.page.getByLabel("address"),
-      blazeDemoYourCityInput: this.page.getByLabel("city"),
-      blazeDemoYourStateInput: this.page.getByLabel("state"),
-      blazeDemoYourZipCodeInput: this.page.locator("#zipCode"),
-      blazeDemoCardTypeDropdown: this.page.locator("#cardType"),
-      blazeDemoCreditCardNumberInput: this.page.locator("#creditCardNumber"),
-      blazeDemoCreditCardMonthInput: this.page.getByPlaceholder("Month"),
-      blazeDemoCreditCardYearInput: this.page.getByPlaceholder("Year"),
-      blazeDemoNameOnCardInput: this.page.getByLabel("Name on Card"),
-      blazeDemoRememberMeCheckbox: this.page.getByRole("checkbox"),
-      blazeDemoPurchaseFlightButton: this.page.getByRole("button", {
-        name: "Purchase Flight",
-      }),
-      blazeDemoPurchaseConfirmation: this.page.getByText(
-        "Thank you for your purchase today!"
-      ),
 
       // Different Alerts
       simpleAlertButton: this.page.getByRole("button", {

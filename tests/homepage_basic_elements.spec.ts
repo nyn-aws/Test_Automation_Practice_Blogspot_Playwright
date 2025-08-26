@@ -1,28 +1,5 @@
 import { test, expect, Locator } from "@playwright/test";
 import { Homepage } from "../src/pages/homepage";
-test(
-  "Validate URL and title",
-  {
-    tag: "@smoke",
-    annotation: [
-      {
-        type: "functional",
-        description:
-          "Verifies the correct URL and title of the Playwright practice homepage.",
-      },
-    ],
-  },
-  async ({ page }) => {
-    const homepage = new Homepage(page);
-    await homepage.goto("/p/playwrightpractice.html");
-    await expect(page).toHaveTitle(
-      "Automation Testing Practice: PlaywrightPractice"
-    );
-    await expect(page).toHaveURL(
-      "https://testautomationpractice.blogspot.com/p/playwrightpractice.html"
-    );
-  }
-);
 
 test.describe("Playwright Locators", () => {
   let homepage: Homepage;
@@ -39,6 +16,28 @@ test.describe("Playwright Locators", () => {
       `Test finished: ${testInfo.title} | Test status: ${testInfo.status} | Test duration: ${testInfo.duration}ms`
     );
   });
+
+  test(
+    "Validate URL and title",
+    {
+      tag: "@smoke",
+      annotation: [
+        {
+          type: "functional",
+          description:
+            "Verifies the correct URL and title of the Playwright practice homepage.",
+        },
+      ],
+    },
+    async ({ page }) => {
+      await expect(page).toHaveTitle(
+        "Automation Testing Practice: PlaywrightPractice"
+      );
+      await expect(page).toHaveURL(
+        "https://testautomationpractice.blogspot.com/p/playwrightpractice.html"
+      );
+    }
+  );
 
   test(
     "Get By Role",
